@@ -410,8 +410,9 @@ find_best_generic(int gnr, ITEM *list, int arg_cnt, int try_device,
         if (func == 0)
           continue;
       }
-      if (STYPEG(func) == ST_ALIAS)
+      if (STYPEG(func) == ST_ALIAS) {
         func = SYMLKG(func);
+      }
       if (chk_elementals && ELEMENTALG(func)) {
         argdistance =
             args_match(func, arg_cnt, distance_sz, list, TRUE, try_device == 1);
@@ -420,6 +421,7 @@ find_best_generic(int gnr, ITEM *list, int arg_cnt, int try_device,
                                  try_device == 1);
       }
       if (found && func && found != func && *min_argdistance != INF_DISTANCE &&
+          !PRIVATEG(SCOPEG(func)) &&
           !is_conflicted_generic(func_sptrgen, found_sptrgen) &&
           cmp_arg_score(argdistance, min_argdistance, distance_sz) == 0) {
         int len;
@@ -941,8 +943,9 @@ find_operator(int opr, SST *lop, SST *rop, LOGICAL elemental)
     int sptrgen = sptr;
     if (NMPTRG(sptrgen) != nmptr)
       continue;
-    if (STYPEG(sptrgen) == ST_ALIAS)
+    if (STYPEG(sptrgen) == ST_ALIAS) {
       sptrgen = SYMLKG(sptrgen);
+    }
     if (STYPEG(sptrgen) != ST_OPERATOR)
       continue;
     /* is the ST_OPERATOR or ST_ALIAS in an active scope */
