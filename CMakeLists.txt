@@ -43,6 +43,7 @@ endif()
 message("-- Checking for GNU tools" )
 execute_process(COMMAND awk --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
 execute_process(COMMAND sed --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
+execute_process(COMMAND grep --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
 message("-- Checking for GNU tools - done" )
 
 # If we are not building as a part of LLVM, build Flang as an
