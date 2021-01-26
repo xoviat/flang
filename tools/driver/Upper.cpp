@@ -1200,8 +1200,8 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
   // LowerCmdArgs.push_back(Args.MakeArgString(TripleStr));
 
   std::vector<std::string> rtlibs = {
-      "flang",
-      "flangrti",
+      "libflang",
+      "libflangrti",
       "pgmath",
       "libomp",
   };
