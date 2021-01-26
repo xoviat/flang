@@ -25,7 +25,7 @@
 #include "ast.h"
 #include "dinit.h"
 #include "pragma.h"
-#include "direct.h"
+#include "fldirect.h"
 #include "rte.h"
 #include "hpfutl.h"
 #include "lower.h"

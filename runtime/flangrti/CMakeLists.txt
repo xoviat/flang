@@ -69,6 +69,11 @@ add_flang_library(flangrti_static
 set_property(TARGET flangrti_static PROPERTY OUTPUT_NAME flangrti)
 
 
+target_include_directories(flangrti_static
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 set(SHARED_LIBRARY TRUE)
 add_flang_library(flangrti_shared
   ${PGC_SRC_FILES}
@@ -76,23 +81,38 @@ add_flang_library(flangrti_shared
   )
 
 # Resolve symbols against libm
-target_link_libraries(flangrti_shared m)
+
+if (NOT MSVC)
+  target_link_libraries(flangrti_shared PUBLIC m)
+endif()
 
 # Import OpenMP
 if (NOT DEFINED LIBOMP_EXPORT_DIR)
-  find_library( 
-    FLANG_LIBOMP
-    libomp.so
-    HINTS ${CMAKE_BINARY_DIR}/lib)
-  target_link_libraries(flangrti_shared ${FLANG_LIBOMP})
+  set(WIN_OMP_LIB "C:/Program Files (x86)/openmp/lib/libomp.lib")
+  set(WIN_OMP_DLL "C:/Program Files (x86)/openmp/bin/libomp.dll")
+  if(EXISTS "${WIN_OMP_LIB}")
+    configure_file(
+      "${WIN_OMP_LIB}" ${CMAKE_BINARY_DIR}/lib COPYONLY
+    )
+    install(
+      FILES "${WIN_OMP_LIB}"
+      DESTINATION ${LLVM_LIBRARY_DIR}
+    )
+  endif()
+  if(EXISTS "${WIN_OMP_DLL}")
+    configure_file(
+      "${WIN_OMP_DLL}" ${CMAKE_BINARY_DIR}/bin COPYONLY
+    )
+    install(
+      FILES "${WIN_OMP_DLL}"
+      DESTINATION ${LLVM_TOOLS_BINARY_DIR}
+    )
+  endif()
+target_link_libraries(flangrti_shared PUBLIC OpenMP::OpenMP_C)
 endif()
 
-find_library( 
-  LIBPGMATH
-  libpgmath.so
-  HINTS ${CMAKE_BINARY_DIR}/lib)
-target_link_libraries(flangrti_shared ${LIBPGMATH})
-
+target_link_libraries(flangrti_static PUBLIC pgmath_static)
+target_link_libraries(flangrti_shared PUBLIC pgmath_shared)
 if( ${TARGET_ARCHITECTURE} STREQUAL "aarch64" )
   target_compile_definitions(flangrti_static PRIVATE TARGET_LINUX_ARM)
   target_compile_definitions(flangrti_shared PRIVATE TARGET_LINUX_ARM)
@@ -101,25 +121,25 @@ elseif( ${TARGET_ARCHITECTURE} STREQUAL "ppc64le" )
   target_compile_definitions(flangrti_shared PRIVATE TARGET_LINUX_POWER)
 endif()
 
-set_property(TARGET flangrti_shared PROPERTY OUTPUT_NAME flangrti)
+set_property(TARGET flangrti_shared PROPERTY OUTPUT_NAME ${_lib}flangrti)
 set(SHARED_LIBRARY FALSE)
 
 target_include_directories(flangrti_static
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
   )
-
+  
 target_include_directories(flangrti_shared
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
-  )
+)
 
 set_target_properties(flangrti_shared flangrti_static
                       PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${FLANG_RTE_LIB_DIR})
 
-target_compile_options(flangrti_static PRIVATE -fPIC)
-
-target_compile_options(flangrti_shared PRIVATE -fPIC)
+if(WIN32)
+  set_target_properties(flangrti_shared PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif()
 
 target_compile_options(flangrti_static PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-Mreentrant>)
 

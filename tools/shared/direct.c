@@ -9,7 +9,7 @@
  * \brief Directive/pragma support modules
  */
 
-#include "direct.h"
+#include "fldirect.h"
 #include "pragma.h"
 #include "ilidir.h"
 #include "miscutil.h"

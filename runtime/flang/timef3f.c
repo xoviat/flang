@@ -13,11 +13,17 @@
 /* how do we do this for WINNT */
 #include "ent3f.h"
 
+#ifndef _WIN32
 #define _LIBC_LIMITS_H_
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/times.h>
+#endif
+#include <sys/types.h>
 #include <limits.h>
+
+#ifdef _WIN32
+#include "wintimes.h"
+#endif
 
 #ifndef CLK_TCK
 #define CLK_TCK sysconf(_SC_CLK_TCK)

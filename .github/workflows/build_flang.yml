@@ -50,7 +50,6 @@ jobs:
 
       - name: Check tools
         run: |
-          sudo apt update
           sudo apt install python3-sphinx
           git --version
           cmake --version

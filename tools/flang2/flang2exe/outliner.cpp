@@ -29,11 +29,16 @@
 #include "dtypeutl.h"
 #include "ll_ftn.h"
 #include "cgllvm.h"
-#include <unistd.h>
 #include "regutil.h"
 #include "symfun.h"
 #if !defined(TARGET_WIN)
 #include <unistd.h>
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <io.h>
+#include "asprintf.h"
 #endif
 #if defined(OMP_OFFLOAD_LLVM) || defined(OMP_OFFLOAD_PGI)
 #include "ompaccel.h"
@@ -41,6 +46,24 @@
 #ifdef OMP_OFFLOAD_LLVM
 static bool isReplacerEnabled = false;
 static int op1Pld = 0;
+#endif
+
+#ifdef TARGET_WIN
+int truncate(const char *path, __int64 length) {
+  FILE *f = fopen(   
+    path,  
+    "r+"
+  );
+  _chsize_s(_fileno(f), length);
+}
+int mkstemp (char *tmpl)
+{
+    FILE *fp;
+    char* path = _mktemp(tmpl);
+    fopen_s( &fp, path, "w" );
+    
+    return (int)_fileno(fp);   
+}
 #endif
 
 #define MAX_PARFILE_LEN 15
@@ -1940,7 +1963,7 @@ ll_open_parfiles()
   if (!par_file1)
     errfatal((error_code_t)4);
   if (!par_file2)
-    errfatal((error_code_t)4);
+    errfatal((error_code_t)4); 
 }
 
 void

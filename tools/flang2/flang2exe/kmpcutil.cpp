@@ -32,8 +32,10 @@
 #include "ompaccel.h"
 #endif
 #include "cgllvm.h"
+#ifndef _WIN32
 #include "cgmain.h"
 #include <unistd.h>
+#endif
 #include "regutil.h"
 #include "dtypeutl.h"
 #include "llassem.h"
@@ -384,7 +386,7 @@ ll_make_kmpc_struct_type(int count, char *name, KMPC_ST_TYPE *meminfo, ISZ_T sz)
   char sname[MXIDLEN];
 
   tag = SPTR_NULL;
-  dtype = cg_get_type(6, TY_STRUCT, NOSYM);
+  dtype = get_type(6, TY_STRUCT, NOSYM);
   if (name) {
     sprintf(sname, "struct%s", name);
     tag = getsymbol(sname);
@@ -524,10 +526,10 @@ build_kmpc_api_name(int kmpc_api, va_list va)
 
   if (KMPC_FLAGS(kmpc_api) & KMPC_FLAG_STR_FMT) {
     char *nm, *res;
-
-    /* Construct the name */
+/*
+     Construct the name 
     vasprintf(&nm, KMPC_NAME(kmpc_api), va);
-
+*/
     /* If the name has already been allocated, use that to save memory */
     if (hashmap_lookup(names, (hash_key_t)nm, (hash_data_t *)&res)) {
       free(nm);

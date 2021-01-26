@@ -30,7 +30,7 @@
 #include "dbg_out.h"
 #include "ccffinfo.h"
 #include "x86.h"
-#include "direct.h"
+#include "fldirect.h"
 #include "optimize.h"
 #include "transfrm.h"
 #include "extern.h"
@@ -1124,9 +1124,9 @@ init(int argc, char *argv[])
     if (!ipa_import_mode) {
       if (fpp_) {
         if (flg.es) {
-          if (cppfile == NULL)
+          if (outfile_name == NULL)
             gbl.cppfil = stdout;
-          else if ((gbl.cppfil = fopen(cppfile, "w")) == NULL)
+          else if ((gbl.cppfil = fopen(outfile_name, "w")) == NULL)
             errfatal(5);
         } else {
           if ((gbl.cppfil = tmpf("a")) == NULL)

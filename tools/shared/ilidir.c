@@ -17,7 +17,7 @@
 #include "global.h"
 #include "error.h"
 #include "symtab.h"
-#include "direct.h"
+#include "fldirect.h"
 
 #if DEBUG
 #define TR0(s)         \

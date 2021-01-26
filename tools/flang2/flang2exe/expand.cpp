@@ -2517,7 +2517,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
           ili2 = ad_aconi(ADDRESSG(sym));
           ilix = ad3ili(IL_AADD, ili1, ili2, 0);
         }
-#if defined(TARGET_WIN)
+#if defined(TARGET_WIN) && !defined(_WIN32)
         else if (SCG(sym) == SC_CMBLK && DLLG(sym) == DLL_IMPORT) {
           /*
            * BASE is of a member which is in a dllimported common.
@@ -2570,7 +2570,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
         *pnmex = nmex;
       return ilix;
     }
-#if defined(PGF90) && defined(TARGET_WIN)
+#if defined(PGF90) && defined(TARGET_WIN) && !defined(_WIN32)
     if (CLASSG(sym) && DESCARRAYG(sym) && SCG(sym) == SC_EXTERN &&
         DLLG(sym) == DLL_IMPORT) {
       /* generate dll import address for type descriptor */
@@ -2666,7 +2666,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
       else
         nmex = addnme(NT_IND, SPTR_NULL, nmex, (INT)0);
     }
-#if defined(TARGET_WIN)
+#if defined(TARGET_WIN) && !defined(_WIN32)
     else if (SCG(sym) == SC_CMBLK && DLLG(sym) == DLL_IMPORT) {
       /*
        * BASE is of a member which is in a dllimported common.

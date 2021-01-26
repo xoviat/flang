@@ -20,8 +20,9 @@
 #include "async.h"
 #include <fcntl.h>
 
-#if defined(WIN32) || defined(WIN64)
+#ifdef _WIN32
 #define access _access
+#define unlink _unlink
 #endif
 
 static FIO_FCB *Fcb; /* pointer to the file control block */

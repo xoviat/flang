@@ -13,6 +13,11 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+#include <Windows.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #if defined(INLINE_MEMOPS)
 #include <sys/types.h>
 

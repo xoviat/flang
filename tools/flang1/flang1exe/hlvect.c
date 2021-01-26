@@ -20,7 +20,7 @@
 #include "nme.h"
 #include "optimize.h"
 #include "hlvect.h"
-#include "direct.h"
+#include "fldirect.h"
 #include "ccffinfo.h"
 #include "symutl.h"
 #include "induc.h"

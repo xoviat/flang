@@ -5,6 +5,7 @@
  *
  */
 
+#ifndef _WIN32
 #include <sys/signal.h>
 #include "stdioInterf.h"
 #include "fioMacros.h"
@@ -119,3 +120,10 @@ __fort_sethand()
     }
   }
 }
+
+#else
+void
+__fort_sethand()
+{
+}
+#endif

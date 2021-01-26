@@ -98,7 +98,7 @@ static void data_pop_const(void);
 static void data_push_const(void);
 static void read_global(void);
 static int read_CCFF(void);
-#include "direct.h"
+#include "fldirect.h"
 static void read_contained(void);
 
 typedef struct CGR_LIST {
@@ -3088,7 +3088,7 @@ read_symbol(void)
       SYMLKP(newsptr, gbl.externs);
       gbl.externs = newsptr;
     }
-#if defined(TARGET_WIN_X86)
+#if defined(TARGET_WIN_X86) && !defined(_WIN32)
     if (dllexportmod) {
       /*
        * dllexport of a normal ST_PROC is illegal; however, it

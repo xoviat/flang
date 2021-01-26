@@ -192,7 +192,8 @@ static char contained_static_name[MXIDLN]; /* Fortran: name of STATIC area for
                                               contained function */
 static char outer_bss_name[MXIDLN];
 static char contained_bss_name[MXIDLN];
-int print_stab_lines = false; /* exported to dwarf output module */
+int
+print_stab_lines = false; /* exported to dwarf output module */
 
 #define PRVT_FIRST 32 /* run-time needs 32 bytes for storage */
 static struct {
@@ -221,7 +222,10 @@ static int global_sptr; /* use to prepend for CUDA constructor static
                            global to avoid llvm optimization problem that make
                            it read only(aM). */
 
-#ifdef TARGET_POWER
+#ifdef TARGET_WIN
+#define CACHE_ALIGN 31
+#define ALN_UNIT 32
+#elif TARGET_POWER
 #define CACHE_ALIGN 127
 #define ALN_UNIT 128
 #else
@@ -345,8 +349,7 @@ make_gblsym(SPTR sptr, const char *ag_name)
       if (flg.debug) {
         lldbg_create_cmblk_mem_mdnode_list(sptr, gblsym);
       }
-    } else
-    {
+    } else {
       AG_LLTYPE(gblsym) = make_lltype_from_sptr(sptr);
     }
   }
@@ -361,7 +364,7 @@ get_ag_searchnm(SPTR sptr)
   return get_llvm_name(sptr);
 }
 
-SPTR
+SPTR 
 get_typedef_ag(char *ag_name, char *typeName)
 {
   SPTR gblsym = find_ag(ag_name);
@@ -410,7 +413,7 @@ fix_private_sym(int sptr)
   ADDRESSP(sptr, ADDRESSG(sptr) + 0);
 }
 
-void
+void 
 assemble(void)
 {
   if (DBGBIT(14, 128))
@@ -441,7 +444,7 @@ assemble(void)
 
    Guaranteed to be called only once per compilation
  */
-void
+void 
 assemble_init(int argc, char *argv[], char *cmdline)
 {
   gbl.bss_addr = 0;
@@ -852,7 +855,7 @@ return get_struct_from_dsrt2(sptr, dsrtp, size, align8,
    Called once per function.  This init is called immediately before any
    processing is performed for a function.
  */
-void
+void 
 assem_init(void)
 {
   INT nmptr;
@@ -952,7 +955,7 @@ assem_init(void)
 /**
    \brief Print directives and label for beginning of function.
  */
-void
+void 
 assem_begin_func(SPTR sptr)
 {
   /* only f90 host subprograms are global */
@@ -961,12 +964,12 @@ assem_begin_func(SPTR sptr)
   get_ag(sptr);
 }
 
-void
+void 
 assem_put_linux_trace(int sptr)
 {
 }
 
-void
+void 
 assem_data(void)
 {
   assem_init(); /* put it here - won't hurt if it is already called
@@ -996,7 +999,7 @@ assem_data(void)
   write_typedescs();
 }
 
-void
+void 
 assem_end(void)
 {
   freearea(2);
@@ -1115,7 +1118,7 @@ write_libomtparget(void)
 
    Guaranteed to be called only once per compilation
  */
-void
+void 
 assemble_end(void)
 {
   int gblsym, tdefsym, align_value, cmem;
@@ -1747,7 +1750,8 @@ static int
 has_final_members(int sptr, int visit_flag)
 {
 
-  typedef struct visitDty {
+  typedef struct visitDty
+  {
     int dty;
     struct visitDty *next;
   } VISITDTY;
@@ -2601,8 +2605,7 @@ write_typedescs(void)
 /* TODO: get_ag will add sptr to the AG table.  We have to do this or we will
  * get undefined references to externally defined type descriptors.
  */
-bool
-is_typedesc_defd(SPTR sptr)
+bool is_typedesc_defd(SPTR sptr)
 {
   SPTR gblsym;
 
@@ -2957,7 +2960,7 @@ align_dir_value(int b)
 }
 
 /* 'n'-byte alignment */
-void
+void 
 assem_emit_align(int n)
 {
   int i = align_dir_value(n);
@@ -2965,7 +2968,7 @@ assem_emit_align(int n)
     fprintf(ASMFIL, "\t.align\t%d\n", i);
 }
 
-void
+void 
 put_section(int sect)
 {
 }
@@ -2990,7 +2993,7 @@ get_hollerith_size(int sptr)
    \param sptr is a Fortran character constant or Hollerith constant.
    \param add_null is 1 if null character is added, otherwise 0.
  */
-void
+void 
 put_fstr(SPTR sptr, int add_null)
 {
   const char *retc = char_type(DTYPEG(sptr), sptr);
@@ -3143,7 +3146,7 @@ get_ag(SPTR sptr)
     sprintf(tdtname, "struct%s", ag_name);
     add_ag_typename(gblsym, tdtname);
   } else
-      if (stype == ST_CMBLK) {
+   if (stype == ST_CMBLK) {
     AG_SYMLK(gblsym) = ag_cmblks;
     ag_cmblks = gblsym;
     AG_SIZE(gblsym) = SIZEG(sptr);
@@ -3196,7 +3199,7 @@ get_ag(SPTR sptr)
     AG_ALLOC(gblsym) = 0;
     AG_DEFD(gblsym) = 1;
   }
-
+  
   else
 #ifdef CUDAG
       if (!(CUDAG(sptr) & CUDA_BUILTIN))
@@ -3349,7 +3352,7 @@ has_typedef_ag(int gblsym)
   return AG_TYPENMPTR(gblsym) > 0;
 }
 
-void
+void 
 set_ag_lltype(int gblsym, LL_Type *llt)
 {
   assert(gblsym, "set_ag_lltype: Invalid gblsym", gblsym, ERR_Fatal);
@@ -3369,7 +3372,7 @@ get_ag_lltype(int gblsym)
   return AG_LLTYPE(gblsym);
 }
 
-void
+void 
 set_ag_return_lltype(int gblsym, LL_Type *llt)
 {
   assert(gblsym, "set_ag_return_lltype: Invalid gblsym", gblsym, ERR_Fatal);
@@ -3420,8 +3423,8 @@ add_ag_fptr_name(char *ag_name)
   return nptr;
 }
 
-#if defined(TARGET_WIN)
-void
+#if defined(TARGET_WIN) && !defined(_MSC_VER)
+void 
 dllexport_mod(int modu)
 {
   int gg;
@@ -3497,7 +3500,7 @@ getextfuncname(SPTR sptr)
   } else {
 #if defined(TARGET_WIN)
     /* we have a mix of undecorated and decorated names on win32 */
-    strcpy(name, "_MAIN_");
+    strcpy(name, "MAIN_");
     return name;
 #else
     q = "MAIN";
@@ -3565,7 +3568,7 @@ getsname(SPTR sptr)
     break;
   case ST_CONST:
   case ST_PARAM:
-      sprintf(name, ".C%d_%s", sptr, getfuncname(gbl.currsub));
+    sprintf(name, ".C%d_%s", sptr, getfuncname(gbl.currsub));
     break;
   case ST_BASE:
     return SYMNAME(sptr);
@@ -3699,7 +3702,7 @@ getsname(SPTR sptr)
       if (ch == '_')
         has_underscore = true;
     }
-/*
+    /*
  * append underscore to name??? -
  * - always for common block (note - common block may have CCSYM set),
  * - not compiler-created external variable,
@@ -3791,7 +3794,7 @@ getsname(SPTR sptr)
     } else {
 #if defined(TARGET_WIN)
       /* we have a mix of undecorated and decorated names on win32 */
-      strcpy(name, "_MAIN_");
+      strcpy(name, "MAIN_");
       return name;
 #else
       q = "MAIN";
@@ -3882,7 +3885,7 @@ set_ag_ref(SPTR sptr)
   }
 }
 
-void
+void 
 sym_is_refd(SPTR sptr)
 {
   ISZ_T size;
@@ -4051,7 +4054,7 @@ sym_is_refd(SPTR sptr)
  * 1. a host local is initialized.
  * 2. a host local appears in a namelist group.
  */
-void
+void 
 hostsym_is_refd(SPTR sptr)
 {
   DTYPE dtype;
@@ -4143,7 +4146,7 @@ hostsym_is_refd(SPTR sptr)
    It's assumed that the alignment and size requirements for each argument are
    those that are required for pointer-sized integer.
  */
-void
+void 
 arg_is_refd(int sptr)
 {
   DTYPE dtype;
@@ -4220,7 +4223,7 @@ assn_stkoff(SPTR sptr, DTYPE dtype, ISZ_T size)
     /* Round-up 'size' since sym's offset is 'aligned next' - size. */
     size = ALIGN(size, a);
   } else if ((flg.quad && size >= MIN_ALIGN_SIZE) ||
-             (QALNG(sptr) && !DESCARRAYG(sptr))) {
+           (QALNG(sptr) && !DESCARRAYG(sptr))) {
     a = DATA_ALIGN;
     /* round-up size since sym's offset is 'aligned next' - size */
     size = ALIGN(size, a);
@@ -4305,7 +4308,7 @@ assn_static_off(SPTR sptr, DTYPE dtype, ISZ_T size)
    which appear in equivalence statements.  Target addresses must be assigned
    using the offsets provided by the equivalence processor.
  */
-void
+void 
 fix_equiv_locals(SPTR loc_list, ISZ_T loc_addr)
 {
   SPTR sym;
@@ -4335,10 +4338,10 @@ fix_equiv_locals(SPTR loc_list, ISZ_T loc_addr)
  * which appear in equivalence statements.  Target addresses must be
  * assigned using the offsets provided by the equivalence processor.
  */
-void
+void 
 fix_equiv_statics(SPTR loc_list,  /* list of local symbols linked by SYMLK */
-                  ISZ_T loc_addr, /* total size of the equivalenced locals */
-                  bool dinitflg)  /* variables were dinit'd */
+                       ISZ_T loc_addr, /* total size of the equivalenced locals */
+                       bool dinitflg)  /* variables were dinit'd */
 {
   SPTR sym;
   int maxa;
@@ -4351,7 +4354,8 @@ fix_equiv_statics(SPTR loc_list,  /* list of local symbols linked by SYMLK */
   if (dinitflg) {
     addr = gbl.saddr;
     addr = ALIGN(addr, maxa);
-    do {
+    do
+    {
       /* NOTE:  REF flag of sym set during equivalence processing */
       sym = loc_list;
       loc_list = SYMLKG(loc_list);
@@ -4392,12 +4396,12 @@ fix_equiv_statics(SPTR loc_list,  /* list of local symbols linked by SYMLK */
 
 /*                         DEBUG Routines                           */
 
-void
+void 
 assem_emit_line(int findex, int lineno)
 {
 }
 
-void
+void 
 assem_emit_file_line(int findex, int lineno)
 {
 }
@@ -4436,7 +4440,8 @@ getaddrdebug(SPTR sptr)
   case ST_ARRAY:
   case ST_STRUCT:
   case ST_UNION:
-    switch (SCG(sptr)) {
+    switch (SCG(sptr))
+    {
     case SC_PRIVATE:
     case SC_NONE:
     case SC_LOCAL:
@@ -4489,7 +4494,8 @@ getaddrdebug(SPTR sptr)
   case ST_INTRIN:
   case ST_GENERIC:
   case ST_PD:
-    switch (SCG(sptr)) {
+    switch (SCG(sptr))
+    {
     case SC_DUMMY:
       return straddr(sptr);
     case SC_NONE:
@@ -4547,13 +4553,13 @@ get_stack_size()
    \brief The F90 front-end may have allocated private variables - need to
    adjust the initial size of the private area.
  */
-void
+void 
 set_private_size(ISZ_T sz)
 {
   prvt.addr = sz + 0;
 }
 
-void
+void 
 set_bss_addr(int size)
 {
   gbl.bss_addr = size;
@@ -4581,7 +4587,8 @@ runtime_alignment(SPTR syma)
   if (!sptr) {
     return ALN(offset, DATA_ALIGN);
   }
-  switch (SCG(sptr)) {
+  switch (SCG(sptr))
+  {
   case SC_LOCAL:
   case SC_PRIVATE:
   case SC_STATIC:
@@ -4635,7 +4642,7 @@ is_cache_aligned(SPTR syma)
   return 1;
 }
 
-void
+void 
 create_static_name(char *name, int usestatic, int num)
 {
   if (usestatic) {
@@ -4653,7 +4660,7 @@ create_static_name(char *name, int usestatic, int num)
  * Go through the list of statics in gbl.statics and gbl.bssvars,
  * set the BASEADDR field and set the MIDNUM field to the appropriate symbol
  */
-void
+void 
 create_static_base(int num)
 {
   int sptr;
@@ -4799,7 +4806,7 @@ get_llvm_name(SPTR sptr)
     break;
   case ST_CONST:
   case ST_PARAM:
-      sprintf(name, ".C%d_%s", sptr, getfuncname(gbl.currsub));
+    sprintf(name, ".C%d_%s", sptr, getfuncname(gbl.currsub));
     break;
   case ST_BASE:
     if (MIDNUMG(sptr))
@@ -4962,7 +4969,7 @@ get_llvm_name(SPTR sptr)
       if (ch == '_')
         has_underscore = true;
     }
-/*
+    /*
  * append underscore to name??? -
  * - always for common block (note - common block may have CCSYM set),
  * - not compiler-created external variable,
@@ -4996,14 +5003,14 @@ get_llvm_name(SPTR sptr)
     if ((flg.smp || XBIT(34, 0x200)) && OUTLINEDG(sptr)) {
       sprintf(name, "%s", SYMNAME(sptr));
       p = name;
-    }
-    else if (gbl.internal && CONTAINEDG(sptr)) {
+    } else if (gbl.internal && CONTAINEDG(sptr)) {
       p = name;
       if (gbl.outersub) {
         m = INMODULEG(gbl.outersub);
         if (m) {
           q = SYMNAME(m);
-          while ((ch = *q++)) {
+          while ((ch = *q++))
+          {
             if (ch == '$')
               *p++ = flg.dollar;
             else
@@ -5012,7 +5019,8 @@ get_llvm_name(SPTR sptr)
           *p++ = '_';
         }
         q = SYMNAME(gbl.outersub);
-        while ((ch = *q++)) {
+        while ((ch = *q++))
+        {
           if (ch == '$')
             *p++ = flg.dollar;
           else
@@ -5021,7 +5029,8 @@ get_llvm_name(SPTR sptr)
         *p++ = '_';
       }
       q = SYMNAME(sptr);
-      while ((ch = *q++)) {
+      while ((ch = *q++))
+      {
         if (ch == '$')
           *p++ = flg.dollar;
         else
@@ -5038,7 +5047,8 @@ get_llvm_name(SPTR sptr)
     m = INMODULEG(sptr);
     if (m) {
       q = SYMNAME(m);
-      while ((ch = *q++)) {
+      while ((ch = *q++))
+      {
         if (ch == '$')
           *p++ = flg.dollar;
         else
@@ -5053,13 +5063,14 @@ get_llvm_name(SPTR sptr)
     } else {
 #if defined(TARGET_WIN)
       /* we have a mix of undecorated and decorated names on win32 */
-      strcpy(name, "_MAIN_");
+      strcpy(name, "MAIN_");
       return name;
 #else
       q = "MAIN";
 #endif
     }
-    while ((ch = *q++)) {
+    while ((ch = *q++))
+    {
       if (ch == '$')
         *p++ = flg.dollar;
       else
@@ -5208,7 +5219,7 @@ has_valid_ag_argdtlist(int gblsym)
   return gblsym ? AG_ARGDTLIST_IS_VALID(gblsym) : false;
 }
 
-void
+void 
 set_ag_argdtlist_is_valid(int gblsym)
 {
   AG_ARGDTLIST_IS_VALID(gblsym) = true;
@@ -5229,8 +5240,7 @@ add_ag_typename(int gblsym, const char *typeName)
   return AG_TYPENMPTR(gblsym);
 }
 
-SPTR
-get_intrin_ag(char *ag_name, DTYPE dtype)
+SPTR get_intrin_ag(char *ag_name, DTYPE dtype)
 {
   SPTR gblsym = find_ag(ag_name);
 
@@ -5298,12 +5308,13 @@ Found:
   return gblsym;
 }
 
-void
+void 
 deleteag_llvm_argdtlist(int gblsym)
 {
   DTLIST *t = AG_ARGDTLIST(gblsym);
   DTLIST *pre;
-  while (t) {
+  while (t)
+  {
     pre = t;
     t = t->next;
     free(pre);
@@ -5337,7 +5348,8 @@ get_argdt(SPTR gblsym, int arg_num)
   DTLIST *arg;
 
   for (i = 0, arg = AG_ARGDTLIST(gblsym); arg && (i < arg_num);
-       ++i, arg = (DTLIST *)get_next_argdtlist((char *)arg)) {
+       ++i, arg = (DTLIST *)get_next_argdtlist((char *)arg))
+  {
     ; /* Iterate */
   }
 
@@ -5393,8 +5405,7 @@ get_lltype_from_argdtlist(char *argdtlist)
   return NULL;
 }
 
-bool
-get_byval_from_argdtlist(const char *argdtlist)
+bool get_byval_from_argdtlist(const char *argdtlist)
 {
   if (argdtlist)
     return ((DTLIST *)argdtlist)->byval;
@@ -5409,15 +5420,14 @@ get_sptr_from_argdtlist(char *argdtlist)
   return SPTR_NULL;
 }
 
-bool
-is_llvmag_entry(int gblsym)
+bool is_llvmag_entry(int gblsym)
 {
   if (gblsym == 0)
     return false;
   return (AG_STYPE(gblsym) == ST_ENTRY);
 }
 
-void
+void 
 set_llvmag_entry(int gblsym)
 {
   if (gblsym != 0) {
@@ -5425,8 +5435,7 @@ set_llvmag_entry(int gblsym)
   }
 }
 
-bool
-is_llvmag_iface(int gblsym)
+bool is_llvmag_iface(int gblsym)
 {
   if (gblsym == 0)
     return false;
@@ -5466,7 +5475,8 @@ write_module_as_subroutine(void)
     return;
   }
 
-  switch (dttypes[dtype]) {
+  switch (dttypes[dtype])
+  {
   case _TY_INT:
     print_token(" 0");
   case _TY_REAL:
@@ -5492,10 +5502,12 @@ find_funcptr_name(SPTR sptr)
   hashval = name_to_hash(sptrnm, len);
 
   for (gblsym = fptr_local.hashtb[hashval]; gblsym;
-       gblsym = FPTR_HASHLK(gblsym)) {
+       gblsym = FPTR_HASHLK(gblsym))
+  {
     np = sptrnm;
     sp = FPTR_NAME(gblsym);
-    do {
+    do
+    {
       if (*np++ != *sp++)
         goto Continue;
     } while (*sp);
@@ -5522,7 +5534,7 @@ local_funcptr_sptr_to_gblsym(SPTR sptr)
   return find_ag(FPTR_IFACENM(key));
 }
 
-void
+void 
 set_llvm_iface_oldname(int gblsym, char *nm)
 {
   INT nmptr;
@@ -5598,7 +5610,8 @@ make_uplevel_arg_struct(void)
     if (AG_UPLEVEL_OLD(gblsym, i))
       mem2 = add_member_for_llvm(AG_UPLEVEL_NEW(gblsym, i), mem2, DT_ADDR,
                                  total_size);
-    else {
+    else
+    {
       mem2 = add_member_for_llvm(AG_UPLEVEL_NEW(gblsym, i), mem2, DT_INT8,
                                  total_size);
     }
@@ -5624,7 +5637,7 @@ make_uplevel_arg_struct(void)
   return dtype;
 }
 
-void
+void 
 add_uplevel_to_host(int *ptr, int cnt)
 {
   int hsize;
@@ -5670,15 +5683,16 @@ add_uplevel_to_host(int *ptr, int cnt)
       }
     }
     if (i < cnt) {
-      do {
+      do
+      {
         nptr[total].oldsptr = *ptr;
         i++;
         total++;
         ptr++;
       } while (i < cnt);
-
     } else if (j < hsize) {
-      do {
+      do
+      {
         nptr[total].oldsptr = hptr[j].oldsptr;
         j++;
         total++;
@@ -5714,7 +5728,7 @@ ThisIsAnAccessBug(DTYPE dtype)
  * it is passing by value - it is 32-bit in size for 32-bit and 64-bit for
  * 64-bit target.
  */
-void
+void 
 _fixup_llvm_uplevel_symbol(void)
 {
   int gblsym, outer_gblsym, i, j;
@@ -5773,7 +5787,8 @@ _fixup_llvm_uplevel_symbol(void)
        */
       if (DTYG(dtype) == TY_CHAR || DTYG(dtype) == TY_NCHAR ||
           (DTYG(dtype) == TY_PTR && (ThisIsAnAccessBug(dtype) == TY_CHAR)) ||
-          (DTYG(dtype) == TY_PTR && (ThisIsAnAccessBug(dtype) == TY_NCHAR))) {
+          (DTYG(dtype) == TY_PTR && (ThisIsAnAccessBug(dtype) == TY_NCHAR)))
+      {
         /* add extra space to put char len */
         cnt++;
 
@@ -5834,7 +5849,7 @@ dump_uplevel_sptr(int gblsym)
 static int uplevelcnt = 0;
 static int *upptr = NULL;
 
-void
+void 
 _add_llvm_uplevel_symbol(int oldsptr)
 {
   int size;
@@ -5862,7 +5877,7 @@ add_aguplevel_oldsptr(void)
   }
 }
 
-void
+void 
 load_uplevel_addresses(SPTR display_temp)
 {
   int i, gblsym;
@@ -5960,7 +5975,7 @@ get_ag_name(int gblsym)
   return AG_NAME(gblsym);
 }
 
-void
+void 
 assem_dinit(void)
 {
   /* intentionally empty */
