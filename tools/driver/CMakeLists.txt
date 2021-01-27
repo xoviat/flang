@@ -12,16 +12,16 @@ set(LLVM_TARGET_DEFINITIONS Options.td)
 tablegen(flang Options.inc -gen-opt-parser-defs)
 
 add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/OptionsRemoved.stamp"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Options.stamp"
         COMMAND "${CMAKE_COMMAND}" -E remove "${CMAKE_CURRENT_BINARY_DIR}/Options.inc.d"
         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Options.inc.d" "${CMAKE_CURRENT_BINARY_DIR}/Options.inc.d"
-        COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_CURRENT_BINARY_DIR}/OptionsRemoved.stamp"
+        COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_CURRENT_BINARY_DIR}/Options.stamp"
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Options.inc"
 )
 
 add_custom_target(
     flang_driver_options_tablegen
-    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/OptionsRemoved.stamp"
+    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Options.stamp"
 )
 
 add_executable(flang
