@@ -81,7 +81,7 @@ if(${LIBPGMATH_SYSTEM_PROCESSOR} MATCHES "x86_64" AND NOT ${LIBPGMATH_WITH_GENER
     set(DEFINITIONS_L1
       TARGET_WIN_X8664 TARGET_WIN _PGI_NOBUILTINS MAXCPUS=256
       MAXCPUSL=8 MAXCPUSR=8 WINNT WIN64 LONG_IS_32
-      HOST_WIN TARGET_X8664 _NO_CRT_STDIO_INLINE)
+      HOST_WIN TARGET_X8664)
 #problems with -O2 and higher using vectorcall ABI
 #    set(FLAGS_L1 "-m64 -O2 ")
     set(FLAGS_L2 "-m64 ")
@@ -89,7 +89,7 @@ if(${LIBPGMATH_SYSTEM_PROCESSOR} MATCHES "x86_64" AND NOT ${LIBPGMATH_WITH_GENER
     set(DEFINITIONS_L2
       TARGET_WIN_X8664 TARGET_WIN _PGI_NOBUILTINS MAXCPUS=256
       MAXCPUSL=8 MAXCPUSR=8 WINNT WIN64 LONG_IS_32
-      HOST_WIN TARGET_X8664 _NO_CRT_STDIO_INLINE)
+      HOST_WIN TARGET_X8664)
 #problems with -O2 and higher using vectorcall ABI
 #    set(FLAGS_L2 "-m64 -O2 ")
     set(FLAGS_L2 "-m64 ")
@@ -235,11 +235,10 @@ endif()
 # Create libmath static library
 get_property(TARGET_OBJECTS GLOBAL PROPERTY "TARGET_OBJECTS")
 
-# FIXME: shared library should acutally be shared
-add_library(pgmath_shared STATIC ${TARGET_OBJECTS})
+add_library(pgmath_shared SHARED ${TARGET_OBJECTS})
 add_library(pgmath_static STATIC ${TARGET_OBJECTS})
 
-set_target_properties(pgmath_shared PROPERTIES OUTPUT_NAME pgmath)
+set_target_properties(pgmath_shared PROPERTIES OUTPUT_NAME pgmath WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set_target_properties(pgmath_static PROPERTIES OUTPUT_NAME ${_lib}pgmath)
 
 install(TARGETS pgmath_shared

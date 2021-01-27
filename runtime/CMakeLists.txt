@@ -25,6 +25,7 @@ if( ${TARGET_OS} STREQUAL "Linux" )
   )
 endif()
 
+add_subdirectory(libpgmath)
 
 if( ${TARGET_ARCHITECTURE} STREQUAL "x86_64" )
   add_definitions(
@@ -45,7 +46,6 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_subdirectory(libpgmath)
 add_subdirectory(ompstub)
 
 add_subdirectory(flangrti)
