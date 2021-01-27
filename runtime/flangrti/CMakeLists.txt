@@ -88,27 +88,7 @@ endif()
 
 # Import OpenMP
 if (NOT DEFINED LIBOMP_EXPORT_DIR)
-  set(WIN_OMP_LIB "C:/Program Files (x86)/openmp/lib/libomp.lib")
-  set(WIN_OMP_DLL "C:/Program Files (x86)/openmp/bin/libomp.dll")
-  if(EXISTS "${WIN_OMP_LIB}")
-    configure_file(
-      "${WIN_OMP_LIB}" ${CMAKE_BINARY_DIR}/lib COPYONLY
-    )
-    install(
-      FILES "${WIN_OMP_LIB}"
-      DESTINATION ${LLVM_LIBRARY_DIR}
-    )
-  endif()
-  if(EXISTS "${WIN_OMP_DLL}")
-    configure_file(
-      "${WIN_OMP_DLL}" ${CMAKE_BINARY_DIR}/bin COPYONLY
-    )
-    install(
-      FILES "${WIN_OMP_DLL}"
-      DESTINATION ${LLVM_TOOLS_BINARY_DIR}
-    )
-  endif()
-target_link_libraries(flangrti_shared PUBLIC OpenMP::OpenMP_C)
+  target_link_libraries(flangrti_shared PUBLIC OpenMP::OpenMP_C)
 endif()
 
 target_link_libraries(flangrti_static PUBLIC pgmath_static)

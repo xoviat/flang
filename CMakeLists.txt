@@ -431,6 +431,11 @@ add_subdirectory(tools)
 #endif()
 #add_subdirectory(examples)
 
+option(FLANG_OPENMP_GPU_NVIDIA "Enable OpenMP Accelerator Offload." OFF)
+if (FLANG_OPENMP_GPU_NVIDIA)
+  add_definitions("-DOMP_OFFLOAD_LLVM")
+endif()
+
 if( BUILD_TESTING )
   enable_testing()
   add_subdirectory(test)
