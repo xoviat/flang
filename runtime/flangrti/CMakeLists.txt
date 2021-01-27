@@ -66,7 +66,7 @@ add_flang_library(flangrti_static
   ${PGC_SRC_FILES}
   ${SHARED_SOURCES}
   )
-set_property(TARGET flangrti_static PROPERTY OUTPUT_NAME flangrti)
+set_property(TARGET flangrti_static PROPERTY OUTPUT_NAME ${_lib}flangrti)
 
 
 target_include_directories(flangrti_static
@@ -101,7 +101,7 @@ elseif( ${TARGET_ARCHITECTURE} STREQUAL "ppc64le" )
   target_compile_definitions(flangrti_shared PRIVATE TARGET_LINUX_POWER)
 endif()
 
-set_property(TARGET flangrti_shared PROPERTY OUTPUT_NAME ${_lib}flangrti)
+set_property(TARGET flangrti_shared PROPERTY OUTPUT_NAME flangrti)
 set(SHARED_LIBRARY FALSE)
 
 target_include_directories(flangrti_static

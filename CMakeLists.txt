@@ -30,11 +30,10 @@ find_package(OpenMP REQUIRED)
 # Create a fake fortran compiler for now
 set(CMAKE_Fortran_COMPILER "${CMAKE_BINARY_DIR}/bin/flang${CMAKE_EXECUTABLE_SUFFIX}")
 if(NOT EXISTS ${CMAKE_Fortran_COMPILER})
-  set(_SHIM_SOURCE "${CMAKE_BINARY_DIR}/flang_shim.c")
-  file(WRITE "${_SHIM_SOURCE}" "int main() { return -1; }")
+  file(WRITE "${CMAKE_BINARY_DIR}/flang.c" "int main() { return -1; }")
   try_compile(SHIM_COMPILED
       ${CMAKE_BINARY_DIR}
-      ${_SHIM_SOURCE}
+      "${CMAKE_BINARY_DIR}/flang.c"
       COPY_FILE ${CMAKE_Fortran_COMPILER}
   )
 endif()
