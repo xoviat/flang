@@ -514,7 +514,7 @@ set_target_properties(flang_static
   Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/include-static
 )
 
-set_property(TARGET flang_static PROPERTY OUTPUT_NAME flang)
+set_property(TARGET flang_static PROPERTY OUTPUT_NAME ${_lib}flang)
 
 set(SHARED_LIBRARY TRUE)
 add_flang_library(flang_shared
@@ -537,7 +537,7 @@ add_flang_library(flang_shared
 add_dependencies(flang_shared flang_static)
 
 
-set_property(TARGET flang_shared PROPERTY OUTPUT_NAME ${_lib}flang)
+set_property(TARGET flang_shared PROPERTY OUTPUT_NAME flang)
 target_link_libraries(flang_shared flangrti_shared)
 
 # Resolve symbols against libm and librt

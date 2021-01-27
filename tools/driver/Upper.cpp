@@ -201,6 +201,7 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
     CommonCmdArgs.push_back("0x40");
   }
 
+  bool mp = false;
   // handle OpemMP options
   if (auto *A = Args.getLastArg(options::OPT_mp, options::OPT_nomp,
                                 options::OPT_fopenmp, options::OPT_fno_openmp))
@@ -218,6 +219,7 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
     if (A->getOption().matches(options::OPT_mp) ||
         A->getOption().matches(options::OPT_fopenmp))
     {
+      mp = true;
 
       CommonCmdArgs.push_back("-mp");
 
@@ -1199,17 +1201,29 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
   // LowerCmdArgs.push_back("-target");
   // LowerCmdArgs.push_back(Args.MakeArgString(TripleStr));
 
-  std::vector<std::string> rtlibs = {
-      "libflang",
-      "libflangrti",
-      "pgmath",
-      "libomp",
-  };
-
-  std::vector<std::string> mainlibs = {"flangmain"};
-
   if (!Args.hasArg(options::OPT_noFlangLibs))
   {
+    std::vector<std::string> mainlibs = {"flangmain"};
+
+    std::vector<std::string> rtlibs;
+    if (Args.hasArg(options::OPT_staticFlangLibs)) {
+      rtlibs.push_back("libflang");
+      rtlibs.push_back("libflangrti");
+      rtlibs.push_back("libpgmath");
+    } else {
+      rtlibs.push_back("flang");
+      rtlibs.push_back("flangrti");
+      rtlibs.push_back("pgmath");
+    }
+
+    if (mp) {
+      rtlibs.push_back("libomp");
+    } else if (Args.hasArg(options::OPT_staticFlangLibs)) {
+      rtlibs.push_back("libompstub");
+    } else {
+      rtlibs.push_back("ompstub");
+    }
+
     for (auto rtlibArg : this->platform->GetFlangLibsLinkerArgs(this->getLibPaths(rtlibs)))
     {
       LowerCmdArgs.push_back("-linker");

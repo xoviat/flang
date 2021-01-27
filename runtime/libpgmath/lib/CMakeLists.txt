@@ -239,8 +239,8 @@ get_property(TARGET_OBJECTS GLOBAL PROPERTY "TARGET_OBJECTS")
 add_library(pgmath_shared STATIC ${TARGET_OBJECTS})
 add_library(pgmath_static STATIC ${TARGET_OBJECTS})
 
-set_target_properties(pgmath_shared PROPERTIES OUTPUT_NAME ${_lib}pgmath)
-set_target_properties(pgmath_static PROPERTIES OUTPUT_NAME pgmath)
+set_target_properties(pgmath_shared PROPERTIES OUTPUT_NAME pgmath)
+set_target_properties(pgmath_static PROPERTIES OUTPUT_NAME ${_lib}pgmath)
 
 install(TARGETS pgmath_shared
         LIBRARY DESTINATION ${LLVM_LIBRARY_DIR}
