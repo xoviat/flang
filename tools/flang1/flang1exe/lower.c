@@ -16,7 +16,7 @@
 #include "symtab.h"
 #include "dtypeutl.h"
 #include "ast.h"
-#include "fldirect.h"
+#include "fdirect.h"
 #include "rtlRtns.h"
 
 #define INSIDE_LOWER

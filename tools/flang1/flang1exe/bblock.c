@@ -21,7 +21,7 @@
 #include "transfrm.h"
 #include "extern.h"
 #include "dinit.h"
-#include "fldirect.h"
+#include "fdirect.h"
 #include "pd.h"
 #include "rtlRtns.h"
 

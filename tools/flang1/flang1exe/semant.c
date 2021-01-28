@@ -28,7 +28,7 @@
 #include "rte.h"
 #include "pd.h"
 #include "interf.h"
-#include "fldirect.h"
+#include "fdirect.h"
 #include "fih.h"
 
 #include "atomic_common.h"

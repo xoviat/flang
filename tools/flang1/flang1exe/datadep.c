@@ -22,7 +22,7 @@
 #include "induc.h"
 
 #include "soc.h"
-#include "fldirect.h"
+#include "fdirect.h"
 #include "extern.h"
 
 #if DEBUG

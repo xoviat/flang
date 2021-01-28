@@ -21,7 +21,7 @@
 #include "scan.h"
 #include "semstk.h"
 #include "ast.h"
-#include "fldirect.h"
+#include "fdirect.h"
 #include "pragma.h"
 #include "x86.h"
 
