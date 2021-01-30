@@ -47,7 +47,7 @@ jobs:
           wget -q -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
           sudo apt update
           sudo apt install -f -y llvm-${{ matrix.version }} clang-${{ matrix.version}} qemu-system-arm qemu-efi
-          sudo qemu-system-aarch64 -m 1024 -cpu cortex-a57 -M virt -nographic -kernel 'bzImage'
+          sudo qemu-system-aarch64 -m 1024 -cpu cortex-a57 -M virt -nographic
 
       - name: Check tools
         run: |
