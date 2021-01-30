@@ -46,7 +46,8 @@ jobs:
           echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main'  | sudo tee -a /etc/apt/sources.list.d/llvm.list
           wget -q -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
           sudo apt update
-          sudo apt install -f -y llvm-${{ matrix.version }} clang-${{ matrix.version}}
+          sudo apt install -f -y llvm-${{ matrix.version }} clang-${{ matrix.version}} qemu-system-arm qemu-efi
+          sudo qemu-system-aarch64 -m 1024 -cpu cortex-a57 -M virt -nographic -pflash flash0.img -pflash flash1.img -drive if=none,file=vivid-server-cloudimg-arm64-uefi1.img,id=hd0 -device virtio-blk-device,drive=hd0 -netdev type=tap,id=net0 -device virtio-net-device,netdev=net0,mac=$randmac
 
       - name: Check tools
         run: |
