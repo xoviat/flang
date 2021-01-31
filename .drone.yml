@@ -1,0 +1,23 @@
+---
+kind: pipeline
+name: arm64_gcc_make
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+- name: Build and Test
+  image: ubuntu:18.04
+  environment:
+    CC: gcc
+    COMMON_FLAGS: 'DYNAMIC_ARCH=1 TARGET=ARMV8 NUM_THREADS=32'
+  commands:
+    - echo "MAKE_FLAGS:= $COMMON_FLAGS"
+    - apt-get update -y
+    - apt-get install -y make $CC gfortran perl
+    - $CC --version
+    - make QUIET_MAKE=1 $COMMON_FLAGS
+    - make -C test $COMMON_FLAGS
+    - make -C ctest $COMMON_FLAGS
+    - make -C utest $COMMON_FLAGS
