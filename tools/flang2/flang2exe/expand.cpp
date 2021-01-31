@@ -2517,7 +2517,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
           ili2 = ad_aconi(ADDRESSG(sym));
           ilix = ad3ili(IL_AADD, ili1, ili2, 0);
         }
-#if defined(TARGET_WIN)
+#if defined(TARGET_WIN) && !defined(_WIN32)
         else if (SCG(sym) == SC_CMBLK && DLLG(sym) == DLL_IMPORT) {
           /*
            * BASE is of a member which is in a dllimported common.
@@ -2526,8 +2526,8 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
            */
           int s;
           s = mk_impsym(MIDNUMG(sym));
-          nmex = addnme(NT_VAR, (SPTR)s, 0, (INT)0);
-          ili1 = ad_acon((SPTR)s, (INT)0);
+          nmex = addnme(NT_VAR, s, 0, (INT)0);
+          ili1 = ad_acon(s, (INT)0);
           ili1 = ad2ili(IL_LDA, ili1, nmex);
           ili2 = ad_aconi(ADDRESSG(sym));
           ilix = ad3ili(IL_AADD, ili1, ili2, 0);
@@ -2570,14 +2570,14 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
         *pnmex = nmex;
       return ilix;
     }
-#if defined(PGF90) && defined(TARGET_WIN)
+#if defined(PGF90) && defined(TARGET_WIN) && !defined(_WIN32)
     if (CLASSG(sym) && DESCARRAYG(sym) && SCG(sym) == SC_EXTERN &&
         DLLG(sym) == DLL_IMPORT) {
       /* generate dll import address for type descriptor */
       int asym, anme;
       asym = mk_impsym(sym);
-      ili1 = ad_acon((SPTR)asym, 0);
-      anme = addnme(NT_VAR, (SPTR)asym, 0, (INT)0);
+      ili1 = ad_acon(asym, 0);
+      anme = addnme(NT_VAR, asym, 0, (INT)0);
       ilix = ad2ili(IL_LDA, ili1, anme);
     } else
 #endif /* PGF90 && TARGET_WIN */
@@ -2630,7 +2630,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
       ilix = ad2ili(IL_LDA, ilix, anme);
       ADDRCAND(ilix, anme);
     }
-  
+
     if (VOLG(sym))
       nmex = NME_VOL;
     else if (SCG(sym) == SC_CMBLK && ALLOCG(sym)) {
@@ -2666,7 +2666,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
       else
         nmex = addnme(NT_IND, SPTR_NULL, nmex, (INT)0);
     }
-#if defined(TARGET_WIN)
+#if defined(TARGET_WIN) && !defined(_WIN32)
     else if (SCG(sym) == SC_CMBLK && DLLG(sym) == DLL_IMPORT) {
       /*
        * BASE is of a member which is in a dllimported common.
@@ -2675,8 +2675,8 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
        */
       int s;
       s = mk_impsym(MIDNUMG(sym));
-      nmex = addnme(NT_VAR, (SPTR)s, 0, (INT)0);
-      ili1 = ad_acon((SPTR)s, (INT)0);
+      nmex = addnme(NT_VAR, s, 0, (INT)0);
+      ili1 = ad_acon(s, (INT)0);
       ili1 = ad2ili(IL_LDA, ili1, nmex);
       ili2 = ad_aconi(ADDRESSG(sym));
       ilix = ad3ili(IL_AADD, ili1, ili2, 0);
@@ -2688,7 +2688,7 @@ create_ref(SPTR sym, int *pnmex, int basenm, int baseilix, int *pclen,
       if (XBIT(125, 0x20))
         nmex = addnme(NT_VAR, sym, 0, (INT)0);
       else
-        nmex = addnme(NT_IND, (SPTR)0, nmex, (INT)0);
+        nmex = addnme(NT_IND, 0, nmex, (INT)0);
     }
 #endif
     else if (SCG(sym) == SC_CMBLK && IS_THREAD_TP(sym)) {
@@ -2771,7 +2771,7 @@ llGetThreadprivateAddr(int sptr)
   ll_set_new_threadprivate(sptr);
   cm = THPRVTOPTG(sptr);
   addr = ad_acon(cm, 0);
-  basenm = addnme(NT_VAR, (SPTR)cm, 0, (INT)0);
+  basenm = addnme(NT_VAR, cm, 0, (INT)0);
   addr = ad2ili(IL_LDA, addr, basenm);
 
   return addr;
