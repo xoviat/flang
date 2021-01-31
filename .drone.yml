@@ -14,7 +14,7 @@ steps:
     COMMON_FLAGS: 'DYNAMIC_ARCH=1 TARGET=ARMV8 NUM_THREADS=32'
   commands: 
    - apt update
-   - apt install -y python3-sphinx
+   - apt install -y python3-sphinx cmake
    - cmake --version
    - make --version
    - gcc --version
