@@ -14,7 +14,7 @@ steps:
     COMMON_FLAGS: 'DYNAMIC_ARCH=1 TARGET=ARMV8 NUM_THREADS=32'
   commands: 
    - apt update
-   - apt install python3-sphinx
+   - apt install -y python3-sphinx
    - git --version
    - cmake --version
    - make --version
@@ -24,7 +24,6 @@ steps:
    - curl -sL https://api.github.com/repos/flang-compiler/flang-driver/actions/workflows/build_flang-driver.yml/runs --output runs_flang-driver.json
    - wget --output-document artifacts_llvm `jq -r '.workflow_runs[0].artifacts_url?' runs_llvm.json`
    - wget --output-document artifacts_flang-driver `jq -r '.workflow_runs[0].artifacts_url?' runs_flang-driver.json`
-   - # Retry with previous build in case no artifacts are available 
    - echo "cat artifacts_llvm"
    - cat artifacts_llvm
    - i="0"
