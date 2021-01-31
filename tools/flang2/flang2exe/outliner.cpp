@@ -31,14 +31,15 @@
 #include "cgllvm.h"
 #include "regutil.h"
 #include "symfun.h"
-#if !defined(TARGET_WIN)
-#include <unistd.h>
-#else
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <io.h>
 #include "asprintf.h"
+#if !defined(TARGET_WIN)
+#include <unistd.h>
+#else
+#define ftruncate _chsize
 #endif
 #if defined(OMP_OFFLOAD_LLVM) || defined(OMP_OFFLOAD_PGI)
 #include "ompaccel.h"
@@ -46,24 +47,6 @@
 #ifdef OMP_OFFLOAD_LLVM
 static bool isReplacerEnabled = false;
 static int op1Pld = 0;
-#endif
-
-#ifdef TARGET_WIN
-int truncate(const char *path, __int64 length) {
-  FILE *f = fopen(   
-    path,  
-    "r+"
-  );
-  _chsize_s(_fileno(f), length);
-}
-int mkstemp (char *tmpl)
-{
-    FILE *fp;
-    char* path = _mktemp(tmpl);
-    fopen_s( &fp, path, "w" );
-    
-    return (int)_fileno(fp);   
-}
 #endif
 
 #define MAX_PARFILE_LEN 15
@@ -906,7 +889,7 @@ ll_reset_parfile(void)
     set_ilmfile(par_file2);
     gbl.eof_flag = 0;
     par_curfile = par_file1;
-    truncate(parFileNm1, 0);
+    ftruncate(fileno(par_file1), 0);
     hasILMRewrite = 0;
     (void)fseek(gbl.ilmfil, 0L, 0);
     (void)fseek(par_curfile, 0L, 0);
@@ -915,7 +898,7 @@ ll_reset_parfile(void)
     set_ilmfile(par_file1);
     gbl.eof_flag = 0;
     par_curfile = par_file2;
-    truncate(parFileNm2, 0);
+    ftruncate(fileno(par_file2), 0);
     hasILMRewrite = 0;
     (void)fseek(gbl.ilmfil, 0L, 0);
     (void)fseek(par_curfile, 0L, 0);
@@ -923,8 +906,8 @@ ll_reset_parfile(void)
   case outliner_reset:
     if (orig_ilmfil)
       set_ilmfile(orig_ilmfil);
-    truncate(parFileNm1, 0);
-    truncate(parFileNm2, 0);
+    ftruncate(fileno(par_file1), 0);
+    ftruncate(fileno(par_file2), 0);
     (void)fseek(par_file1, 0L, 0);
     (void)fseek(par_file2, 0L, 0);
     par_curfile = par_file1;
@@ -953,7 +936,7 @@ ll_reset_parfile_(void)
       gbl.ilmfil = par_file2;
       gbl.eof_flag = 0;
       par_curfile = par_file1;
-      truncate(parFileNm1, 0);
+      ftruncate(fileno(par_file1), 0);
       hasILMRewrite = 0;
       (void)fseek(gbl.ilmfil, 0L, 0);
       (void)fseek(par_curfile, 0L, 0);
@@ -962,7 +945,7 @@ ll_reset_parfile_(void)
       gbl.ilmfil = par_file1;
       gbl.eof_flag = 0;
       par_curfile = par_file2;
-      truncate(parFileNm2, 0);
+      ftruncate(fileno(par_file2), 0);
       hasILMRewrite = 0;
       (void)fseek(gbl.ilmfil, 0L, 0);
       (void)fseek(par_curfile, 0L, 0);
@@ -980,8 +963,8 @@ ll_reset_parfile_(void)
   } else {
     if (orig_ilmfil)
       gbl.ilmfil = orig_ilmfil;
-    truncate(parFileNm1, 0);
-    truncate(parFileNm2, 0);
+    ftruncate(fileno(par_file1), 0);
+    ftruncate(fileno(par_file2), 0);
     (void)fseek(par_file1, 0L, 0);
     (void)fseek(par_file2, 0L, 0);
     par_curfile = par_file1;
@@ -1953,17 +1936,27 @@ llRestoreSavedILFil()
 void
 ll_open_parfiles()
 {
-  int fd1, fd2;
   strcpy(parFileNm1, "pgipar1XXXXXX");
   strcpy(parFileNm2, "pgipar2XXXXXX");
+#if defined(TARGET_WIN)
+  char* result1 = _mktemp(parFileNm1);
+  char* result2 = _mktemp(parFileNm2);
+  if (result1 != NULL && result2 != NULL)
+  {
+    fopen_s( &par_file1, result1, "w" );
+    fopen_s( &par_file2, result2, "w" );
+  }
+#else
+  int fd1, fd2;
   fd1 = mkstemp(parFileNm1);
   fd2 = mkstemp(parFileNm2);
   par_file1 = fdopen(fd1, "w+");
   par_file2 = fdopen(fd2, "w+");
+#endif
   if (!par_file1)
     errfatal((error_code_t)4);
   if (!par_file2)
-    errfatal((error_code_t)4); 
+    errfatal((error_code_t)4);
 }
 
 void
