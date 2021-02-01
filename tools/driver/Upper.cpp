@@ -833,7 +833,10 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
 
   // Add system include directories
   UpperCmdArgs.push_back("-idir");
-  UpperCmdArgs.push_back(Args.MakeArgString(getIncludePath()));
+  UpperCmdArgs.push_back(Args.MakeArgString(this->getIncludePath()));
+
+  UpperCmdArgs.push_back("-moddir");
+  UpperCmdArgs.push_back(Args.MakeArgString(this->getIncludePath()));
 
   // Add user-defined include directories
   for (auto Arg : Args.filtered(options::OPT_I))
