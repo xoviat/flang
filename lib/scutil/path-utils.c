@@ -84,8 +84,12 @@ fndpath(const char *target, char *path, size_t max_length, const char *dirlist)
       *p++ = '/';
       memcpy(p, target, target_length);
       p[target_length] = '\0';
-      if (access(path, 0) == 0)
+      if (access(path, 0) == 0) {
+        printf("path access: %s\n", path);
         return 0; /* path exists */
+      } else {
+        printf("no path access: %s, %1.2d\n", path, access(path, 0));
+      }
     }
     if (end == NULL)
       break;
