@@ -843,7 +843,7 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
   {
     Arg->claim();
     UpperCmdArgs.push_back("-idir");
-    UpperCmdArgs.push_back(Arg->getValue(0));
+    UpperCmdArgs.push_back(this->getShortPath(Arg->getValue(0)));
   }
 
   // Add user-defined module directories
@@ -851,7 +851,7 @@ std::vector<std::string> FlangDriver::upper(llvm::opt::InputArgList &Args, std::
   {
     Arg->claim();
     UpperCmdArgs.push_back("-moddir");
-    UpperCmdArgs.push_back(Arg->getValue(0));
+    UpperCmdArgs.push_back(this->getShortPath(Arg->getValue(0)));
   }
 
   // "Define" preprocessor flags
