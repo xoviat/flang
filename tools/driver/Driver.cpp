@@ -221,7 +221,7 @@ void FlangDriver::compile(llvm::opt::InputArgList &Args)
     return;
   }
 
-  if (Args.hasArg(options::OPT_v) || true)
+  if (Args.hasArg(options::OPT_v))
     isVerbose = true;
 
   if (isVerbose)
