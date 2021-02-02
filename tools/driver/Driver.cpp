@@ -239,8 +239,9 @@ void FlangDriver::compile(llvm::opt::InputArgList &Args)
 
   if (isVerbose)
   {
-    std::cout << "Driver directory: " << directory << std::endl;
-    std::cout << "Triple: " << triple.str() << std::endl;
+    std::cout << "Driver directory: " << this->directory << std::endl;
+    std::cout << "Triple: " << this->triple.str() << std::endl;
+    std::cout << "Include path: " << this->getIncludePath() <<  std::endl;
   }
 
   if (!Args.hasArg(options::OPT_INPUT))
