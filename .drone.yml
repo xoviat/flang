@@ -26,24 +26,25 @@ steps:
    - echo "cat artifacts_llvm"
    - cat artifacts_llvm
    - i="0"
-   - while [ `jq -r '.total_count?' artifacts_llvm` == "0" ] && [ $i -lt 3 ] \
-     do \
-      echo "No artifacts in build $i, counting from latest" \
-      i=$[$i+1] \
-      wget --output-document artifacts_llvm `jq -r --argjson i "$i" '.workflow_runs[$i].artifacts_url?' runs_llvm.json` \
-      echo "cat artifacts_llvm" \
-      cat artifacts_llvm \
+   - |
+     while [ `jq -r '.total_count?' artifacts_llvm` == "0" ] && [ $i -lt 3 ] 
+     do 
+      echo "No artifacts in build $i, counting from latest" 
+      i=$[$i+1] 
+      wget --output-document artifacts_llvm `jq -r --argjson i "$i" '.workflow_runs[$i].artifacts_url?' runs_llvm.json` 
+      echo "cat artifacts_llvm" 
+      cat artifacts_llvm 
     done
    - echo "cat artifacts_flang-driver"
    - cat artifacts_flang-driver
    - i="0"
-   - while [ `jq -r '.total_count?' artifacts_flang-driver` == "0" ] && [ $i -lt 3 ] \
-     do \
-      echo "No artifacts in build $i, counting from latest" \
-      i=$[$i+1] \
-      wget --output-document artifacts_flang-driver `jq -r --argjson i "$i" '.workflow_runs[$i].artifacts_url?' runs_flang-driver.json` \
-      echo "cat artifacts_flang-driver" \
-      cat artifacts_flang-driver \
+   - while [ `jq -r '.total_count?' artifacts_flang-driver` == "0" ] && [ $i -lt 3 ]  |
+     do 
+      echo "No artifacts in build $i, counting from latest" 
+      i=$[$i+1] 
+      wget --output-document artifacts_flang-driver `jq -r --argjson i "$i" '.workflow_runs[$i].artifacts_url?' runs_flang-driver.json` 
+      echo "cat artifacts_flang-driver" 
+      cat artifacts_flang-driver 
      done
    - url=`jq -r '.artifacts[] | select(.name == "llvm_build_arm64") | .archive_download_url' artifacts_llvm`
    - url=`jq -r '.artifacts[] | select(.name == "flang-driver_build_arm64") | .archive_download_url' artifacts_flang-driver`
