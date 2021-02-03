@@ -11,7 +11,7 @@ wget --output-document artifacts_flang-driver `jq -r '.workflow_runs[0].artifact
 echo "cat artifacts_llvm"
 cat artifacts_llvm
 i="0"
-while [ `jq -r '.total_count?' artifacts_llvm` == "0" ] && [ $i -lt 3 ]; 
+while [ `jq -r '.total_count?' artifacts_llvm` == "0" ] && [ $i -lt 3 ]
 do
     echo "No artifacts in build $i, counting from latest" 
     i=$[$i+1] 
@@ -22,7 +22,7 @@ done
 echo "cat artifacts_flang-driver"
 cat artifacts_flang-driver
 i="0"
-while [ `jq -r '.total_count?' artifacts_flang-driver` == "0" ] && [ $i -lt 3 ]; 
+while [ `jq -r '.total_count?' artifacts_flang-driver` == "0" ] && [ $i -lt 3 ]
 do
     echo "No artifacts in build $i, counting from latest" 
     i=$[$i+1] 
