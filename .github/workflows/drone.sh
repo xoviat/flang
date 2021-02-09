@@ -11,6 +11,7 @@ wget --output-document artifacts_flang-driver `jq -r '.workflow_runs[0].artifact
 echo "cat artifacts_llvm"
 cat artifacts_llvm
 i="0"
+set -x
 while [ `jq -r '.total_count?' artifacts_llvm` == "0" ] && [ $i -lt 3 ]
 do
     echo "No artifacts in build $i, counting from latest" 
