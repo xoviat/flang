@@ -10,15 +10,22 @@ add_definitions(
  -DMAXCPUS=256 
  -DMAXCPUSL=8 
  -DMAXCPUSR=8 
- -DTARGET_LINUX 
  -DTARGET_LLVM 
- -DLINUX 
- -DPGF90 
+ -DPGF90
  -DPGFLANG
  -DNATIVE_FPCVT
  -DPGI_LITTLE_ENDIAN
  -DINLINE_MEMOPS
 )
+
+if( ${TARGET_OS} STREQUAL "Linux" )
+  add_definitions(
+    -DTARGET_LINUX
+    -DLINUX
+  )
+endif()
+
+add_subdirectory(libpgmath)
 
 if( ${TARGET_ARCHITECTURE} STREQUAL "x86_64" )
   add_definitions(

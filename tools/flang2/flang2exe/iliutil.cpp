@@ -201,7 +201,7 @@ addili(ILI *ilip)
     ilix = get_ili(ilip);
     break;
   case ILTY_PROC:
-#if defined(TARGET_WIN_X8664)
+#if defined(TARGET_WIN_X8664) && !defined(_WIN32)
     insert_argrsrv(ilip);
 #endif
     if (opc == IL_QJSR && share_qjsr_ili) {

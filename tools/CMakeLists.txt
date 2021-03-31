@@ -15,6 +15,7 @@ if( ${TARGET_ARCHITECTURE} STREQUAL "aarch64" )
   add_definitions(-DLLVM_ENABLE_FFI=false)
 endif()
 
+add_subdirectory(driver)
 add_subdirectory(shared)
 add_subdirectory(flang1)
 add_subdirectory(flang2)

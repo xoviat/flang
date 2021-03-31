@@ -9,18 +9,29 @@
  * \brief Global definitions and declarations for Fortran I/O library
  */
 
+#include "stdio.h"
 #include "fioMacros.h"
 #include "stdioInterf.h" /* stubbed version of stdio.h */
 #include "cnfg.h" /* declarations for configuration items */
 
 #define GBL_SIZE_T_FORMAT "zu"
 
+#ifdef _WIN32
+#include <Windows.h>
+
+#define INT64 __FLANG_INT64
+#define UINT64 __FLANG_UINT64
+#define INT __FLANG_INT
+#define UINT __FLANG_UINT
+#endif
 typedef int DBLINT64[2];
 typedef unsigned int DBLUINT64[2];
 
 /* declarations needed where integer*8 & logical*8 are supported and
  * the natural integer is integer*4 (__BIGINT is __INT4).
  */
+typedef int INT64[2];
+typedef unsigned int UINT64[2];
 
 #define I64_MSH(t) t[1]
 #define I64_LSH(t) t[0]
@@ -36,11 +47,6 @@ typedef unsigned short WCHAR;
 /*  declare some external library functions required:  */
 
 #define VOID void
-
-WIN_MSVCRT_IMP char *WIN_CDECL getenv(const char *);
-WIN_MSVCRT_IMP long WIN_CDECL strtol(const char *, char **, int);
-WIN_MSVCRT_IMP char *WIN_CDECL strerror(int);
-WIN_MSVCRT_IMP char *WIN_CDECL strstr(const char *, const char *);
 
 typedef __INT_T INT;       /* native integer at least 32 bits */
 typedef unsigned int UINT; /* unsigned 32 bit native integer */
@@ -317,13 +323,8 @@ typedef struct {
 #include <errno.h>
 
 extern FIO_TBL fioFcbTbls;
-#ifdef WINNT
-extern FIO_FCB *__get_fio_fcbs(void);
-#define GET_FIO_FCBS __get_fio_fcbs()
-#else
 #define GET_FIO_FCBS fioFcbTbls.fcbs
 
-#endif
 
 extern int next_newunit; /* newunit counter */
 

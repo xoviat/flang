@@ -8,12 +8,17 @@ enable_language(C ASM Fortran) # Enable assembly and Fortran
 
 SET(ASM_OPTIONS "-DLINUX_ELF")
 SET(CMAKE_ASM_FLAGS "${CFLAGS} ${ASM_OPTIONS}" )
-SET(CMAKE_SHARED_LINKER_FLAGS "-no-flang-libs")
+if (NOT MSVC)
+  SET(CMAKE_SHARED_LINKER_FLAGS "-no-flang-libs")
+endif()
 
 # We are using Fortran driver to build this library with fresh compiler
 # components, so point its binary directory to the build directory to pick up
 # flang* executables
 SET(CMAKE_Fortran_FLAGS "-B ${LLVM_RUNTIME_OUTPUT_INTDIR} ${CMAKE_Fortran_FLAGS}")
+
+# flang runtime libraries are being built here. Don't link them
+SET(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -no-flang-libs")
 
 SET(FTN_INTRINSICS_DESC_INDEP
   abort3f.c
@@ -180,6 +185,7 @@ SET(FTN_INTRINSICS_DESC_INDEP
   unpacktimeqq3f.c
   utils3f.c
   wait3f.c
+  wintimes.c
   )
 
 SET(FTN_INTRINSICS_DESC_DEP
@@ -413,38 +419,64 @@ SET(FTN_SUPPORT_DESC_DEP
 set(I8_FILES_DIR I8_sources)
 separate_arguments(SEPARATED_CMAKE_Fortran_FLAGS NATIVE_COMMAND ${CMAKE_Fortran_FLAGS})
 
-# Fortran files with macros as module names need to be preprocessed.
-# CMake has an internal Fortran parser that parses the module name, but it doesn't
-# consider macros which results in wrong dependencies.
-add_custom_command(
-  OUTPUT "${I8_FILES_DIR}/ieee_arithmetic.F95"
-  COMMAND "${CMAKE_Fortran_COMPILER}" -E -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
-  "${CMAKE_CURRENT_SOURCE_DIR}/ieee_arithmetic.F95" -DDESC_I8 
-  > "${I8_FILES_DIR}/ieee_arithmetic.F95"
-  COMMENT "Preprocessing ieee_arithmetic.F95"
-  VERBATIM
-  DEPENDS flang1 flang2
-)
+if(WIN32)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/ieee_arithmetic.F95"
+    "${I8_FILES_DIR}/ieee_arithmetic.F95"
+    COPYONLY
+  )
 
-add_custom_command(
-  OUTPUT "${I8_FILES_DIR}/ieee_exceptions.F95"
-  COMMAND "${CMAKE_Fortran_COMPILER}" -E -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
-  "${CMAKE_CURRENT_SOURCE_DIR}/ieee_exceptions.F95" -DDESC_I8 
-  > "${I8_FILES_DIR}/ieee_exceptions.F95"
-  COMMENT "Preprocessing ieee_exceptions.F95"
-  VERBATIM
-  DEPENDS flang1 flang2
-)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/ieee_exceptions.F95"
+    "${I8_FILES_DIR}/ieee_exceptions.F95"
+    COPYONLY
+  )
 
-add_custom_command(
-  OUTPUT ${I8_FILES_DIR}/norm2_1.F95 norm2_1.F95
-  COMMAND "${CMAKE_Fortran_COMPILER}" -E -DDESC_I8 -DPGFLANG -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95 > "${I8_FILES_DIR}/norm2_1.F95"
-  COMMAND "${CMAKE_Fortran_COMPILER}" -E -DPGFLANG -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95 > "norm2_1.F95"
-  VERBATIM
-  DEPENDS flang1 flang2
-)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95"
+    "${I8_FILES_DIR}/norm2_1.F95"
+    COPYONLY
+  )
+
+    configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95"
+    norm2_1.F95
+    COPYONLY
+  )
+else()
+  # Fortran files with macros as module names need to be preprocessed.
+  # CMake has an internal Fortran parser that parses the module name, but it doesn't
+  # consider macros which results in wrong dependencies.
+  add_custom_command(
+    OUTPUT "${I8_FILES_DIR}/ieee_arithmetic.F95"
+    COMMAND "${CMAKE_Fortran_COMPILER}" -E -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
+    "${CMAKE_CURRENT_SOURCE_DIR}/ieee_arithmetic.F95" -DDESC_I8 
+    > "${I8_FILES_DIR}/ieee_arithmetic.F95"
+    COMMENT "Preprocessing ieee_arithmetic.F95"
+    VERBATIM
+    DEPENDS flang1 flang2
+  )
+
+  add_custom_command(
+    OUTPUT "${I8_FILES_DIR}/ieee_exceptions.F95"
+    COMMAND "${CMAKE_Fortran_COMPILER}" -E -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
+    "${CMAKE_CURRENT_SOURCE_DIR}/ieee_exceptions.F95" -DDESC_I8 
+    > "${I8_FILES_DIR}/ieee_exceptions.F95"
+    COMMENT "Preprocessing ieee_exceptions.F95"
+    VERBATIM
+    DEPENDS flang1 flang2
+  )
+
+  add_custom_command(
+    OUTPUT ${I8_FILES_DIR}/norm2_1.F95 norm2_1.F95
+    COMMAND "${CMAKE_Fortran_COMPILER}" -E -DDESC_I8 -DPGFLANG -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95 > "${I8_FILES_DIR}/norm2_1.F95"
+    COMMAND "${CMAKE_Fortran_COMPILER}" -E -DPGFLANG -cpp ${SEPARATED_CMAKE_Fortran_FLAGS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/norm2.F95 > "norm2_1.F95"
+    VERBATIM
+    DEPENDS flang1 flang2
+  )
+endif()
 
 # The files lists FTN_INTRINSICS_DESC_DEP and FTN_SUPPORT_DESC_DEP need to be compiled twice (with and without 'DESC_I8' compile definition). So an actual copy is made in a temp file on which this is done.
 
@@ -461,10 +493,10 @@ FOREACH(file ${FTN_SUPPORT_DESC_DEP})
 ENDFOREACH(file)
 
 LIST(APPEND FTN_SUPPORT_DESC_DEP ieee_arithmetic.F95 ieee_exceptions.F95 norm2_1.F95)
-LIST(APPEND FTN_SUPPORT_I8 
-"${I8_FILES_DIR}/ieee_arithmetic.F95"
-"${I8_FILES_DIR}/ieee_exceptions.F95"
-"${I8_FILES_DIR}/norm2_1.F95"
+LIST(APPEND FTN_SUPPORT_I8
+  "${I8_FILES_DIR}/ieee_arithmetic.F95"
+  "${I8_FILES_DIR}/ieee_exceptions.F95"
+  "${I8_FILES_DIR}/norm2_1.F95"
 )
 
 add_flang_library(flang_static
@@ -476,7 +508,13 @@ add_flang_library(flang_static
   ${FTN_SUPPORT_I8}
   ${SHARED_SOURCES}
   )
-set_property(TARGET flang_static PROPERTY OUTPUT_NAME flang)
+  
+set_target_properties(flang_static
+  PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/include-static
+)
+
+set_property(TARGET flang_static PROPERTY OUTPUT_NAME ${_lib}flang)
 
 set(SHARED_LIBRARY TRUE)
 add_flang_library(flang_shared
@@ -488,8 +526,6 @@ add_flang_library(flang_shared
   ${FTN_SUPPORT_I8}
   ${SHARED_SOURCES}
   )
-set_property(TARGET flang_shared PROPERTY OUTPUT_NAME flang)
-
 #
 # Seralize the building of flang_shared and flang_static to eliminate
 # conflicts with the same module files from the shared and static builds
@@ -500,9 +536,16 @@ set_property(TARGET flang_shared PROPERTY OUTPUT_NAME flang)
 #
 add_dependencies(flang_shared flang_static)
 
-target_link_libraries(flang_shared ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/libflangrti.so)
+
+set_property(TARGET flang_shared PROPERTY OUTPUT_NAME flang)
+target_link_libraries(flang_shared flangrti_shared)
+
 # Resolve symbols against libm and librt
-target_link_libraries(flang_shared m rt)
+if (NOT MSVC)
+  target_link_libraries(flang_shared rt m)
+else()
+  set_target_properties(flang_shared PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif()
 
 set(SHARED_LIBRARY FALSE)
 
@@ -527,13 +570,24 @@ set_property(
   HAVE_LONG_LONG_INT
  )
 
-set_property(
-  SOURCE ${FTN_SUPPORT_DESC_INDEP} ${FTN_SUPPORT_DESC_DEP} 
+if(WIN32)
+  set_property(
+    SOURCE ${FTN_SUPPORT_DESC_INDEP} ${FTN_SUPPORT_DESC_DEP} 
+    PROPERTY COMPILE_DEFINITIONS
+    TARGET_WIN_X8664
+    INT32PTR64
+    TM_I8
+    HAVE_LONG_LONG_INT
+  )
+else()
+  set_property(
+    SOURCE ${FTN_SUPPORT_DESC_INDEP} ${FTN_SUPPORT_DESC_DEP} 
   PROPERTY COMPILE_DEFINITIONS 
-  INT32PTR64
-  TM_I8
-  HAVE_LONG_LONG_INT
- )
+    INT32PTR64
+    TM_I8
+    HAVE_LONG_LONG_INT
+  )
+endif()
 
 set_property(
   SOURCE ${FTN_SUPPORT_I8} 
@@ -561,57 +615,6 @@ set_source_files_properties(
 ## we need to help it
 
 # State the module that the source is producing
-set_source_files_properties(
-  iso_c_bind.F95
-  PROPERTIES
-  OBJECT_OUTPUTS ${CMAKE_Fortran_MODULE_DIRECTORY}/iso_c_binding.mod
-  )
-
-# State a dependency on the module
-set_source_files_properties(
-  ieee_arithmetic.F95
-  PROPERTIES
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/iso_c_binding.mod
-  OBJECT_OUTPUTS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_arithmetic.mod
-  )
-
-set_source_files_properties(
-  ieee_exceptions.F95
-  PROPERTIES
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/iso_c_binding.mod
-  OBJECT_OUTPUTS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_exceptions.mod
-  )
-
-# State a dependency on the module
-set_source_files_properties(
-  ${I8_FILES_DIR}/ieee_arithmetic.F95
-  PROPERTIES 
-  COMPILE_DEFINITIONS DESC_I8
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/iso_c_binding.mod
-  OBJECT_OUTPUTS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_arithmetic_la.mod
-  )
-
-set_source_files_properties(
-  ${I8_FILES_DIR}/ieee_exceptions.F95
-  PROPERTIES 
-  COMPILE_DEFINITIONS DESC_I8
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/iso_c_binding.mod
-  OBJECT_OUTPUTS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_exceptions_la.mod
-  )
-
-set_source_files_properties(
-  norm2_1.F95
-  PROPERTIES 
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_arithmetic.mod
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_exceptions.mod
-)
-
-set_source_files_properties(
-   ${I8_FILES_DIR}/norm2_1.F95
-  PROPERTIES 
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_arithmetic_la.mod
-  OBJECT_DEPENDS ${CMAKE_Fortran_MODULE_DIRECTORY}/ieee_exceptions_la.mod
-)
 
 set_target_properties(flang_static flang_shared
   PROPERTIES
@@ -634,17 +637,27 @@ target_include_directories(flang_shared
 add_dependencies(flang_static 
   flang1
   flang2
+  flang
   )
 
 # Make sure the compiler is built before we bootstrap
 add_dependencies(flang_shared 
   flang1
   flang2
+  flang
   )
 
-target_compile_options(flang_static PRIVATE -fPIC)
+if (NOT MSVC)
+  target_compile_options(flang_static PRIVATE -fPIC)
+  target_compile_options(flang_shared PRIVATE -fPIC)
+else()
+  # target_link_libraries(flang_shared Ws2_32.lib)
+  # target_link_libraries(flang_static Ws2_32.lib)
 
-target_compile_options(flang_shared PRIVATE -fPIC)
+  set_target_properties(flang_static PROPERTIES LINKER_LANGUAGE CXX)
+  set_target_properties(flang_shared PROPERTIES LINKER_LANGUAGE CXX)
+  target_compile_options(flang_shared PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-DPGDLL>)
+endif()
 
 target_compile_options(flang_static PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-Mreentrant>)
 

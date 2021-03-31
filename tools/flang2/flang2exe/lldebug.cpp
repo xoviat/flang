@@ -36,6 +36,12 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+#endif
+#include <direct.h>
 #include "upper.h"
 
 #ifdef __cplusplus
@@ -1779,7 +1785,9 @@ static char *
 get_currentdir(void)
 {
   char *cwd = (char *)malloc(PATH_MAX);
+
   getcwd(cwd, PATH_MAX);
+
   return cwd;
 }
 

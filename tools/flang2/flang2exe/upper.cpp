@@ -3090,7 +3090,7 @@ read_symbol(void)
       SYMLKP(newsptr, gbl.externs);
       gbl.externs = newsptr;
     }
-#if defined(TARGET_WIN_X86)
+#if defined(TARGET_WIN_X86) && !defined(_WIN32)
     if (dllexportmod) {
       /*
        * dllexport of a normal ST_PROC is illegal; however, it
