@@ -185,7 +185,6 @@ SET(FTN_INTRINSICS_DESC_INDEP
   unpacktimeqq3f.c
   utils3f.c
   wait3f.c
-  wintimes.c
   )
 
 SET(FTN_INTRINSICS_DESC_DEP

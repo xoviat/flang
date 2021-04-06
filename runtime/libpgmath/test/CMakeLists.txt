@@ -76,17 +76,17 @@ else()
   endif()
  
   # Use add_lit_testsuite() from LLVM CMake.
-  if(${LIBPGMATH_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    add_lit_testsuite(check-lib${LIBPGMATH_LIBRARY_NAME}
-      "Running libpgmath tests"
-      ${CMAKE_CURRENT_BINARY_DIR}
-      DEPENDS pgmath pgarch)
-  else()
-    add_lit_testsuite(check-lib${LIBPGM_LIBRARY_NAME}
-      "Running libpgm tests"
-      ${CMAKE_CURRENT_BINARY_DIR}
-      DEPENDS ${LIBPGM_LIBRARY_NAME})
-  endif()
+#  if(${LIBPGMATH_SYSTEM_PROCESSOR} MATCHES "x86_64")
+#    add_lit_testsuite(check-lib${LIBPGMATH_LIBRARY_NAME}
+#      "Running libpgmath tests"
+#      ${CMAKE_CURRENT_BINARY_DIR}
+#      DEPENDS pgmath pgarch)
+#  else()
+#    add_lit_testsuite(check-lib${LIBPGM_LIBRARY_NAME}
+#      "Running libpgm tests"
+#      ${CMAKE_CURRENT_BINARY_DIR}
+#      DEPENDS ${LIBPGM_LIBRARY_NAME})
+#  endif()
   
 #   add_lit_testsuite(check-libpgmath
 #     "Running libpgmath tests"
@@ -102,7 +102,7 @@ set(LIBPGMATH_GETARCH_LIB_FULL "${CMAKE_SHARED_LIBRARY_PREFIX}${LIBPGMATH_GETARC
   set_property(TARGET ${LIBPGMATH_GETARCH_LIB} PROPERTY COMPILE_DEFINITIONS TARGET_X8664 PG_PIC)
   # target_link_libraries(${LIBPGMATH_GETARCH_LIB} INTERFACE "-Wl,-e,lib_entry")
   target_include_directories(${LIBPGMATH_GETARCH_LIB} PUBLIC ${LIBPGMATH_SRC_DIR}/x86_64)
-  add_dependencies(check-libpgmath ${LIBPGMATH_GETARCH_LIB})
+#  add_dependencies(check-libpgmath ${LIBPGMATH_GETARCH_LIB})
 
   if(${LIBPGMATH_SYSTEM_NAME} MATCHES "Linux")
     set_property(TARGET ${LIBPGMATH_GETARCH_LIB} APPEND PROPERTY COMPILE_DEFINITIONS TARGET_LINUX_X8664)
