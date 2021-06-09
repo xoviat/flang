@@ -97,6 +97,7 @@ void __fort_gethostname(host) char *host;
 #endif
   char *p;
   int s;
+#ifndef _WIN32
 
   p = __fort_getopt("-curhost");
   if (p == NULL) {
@@ -108,5 +109,8 @@ void __fort_gethostname(host) char *host;
     p = un.nodename;
 #endif
   }
+#else
+  strcpy(p, "localhost");
+#endif
   strcpy(host, p);
 }
