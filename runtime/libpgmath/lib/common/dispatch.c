@@ -511,7 +511,7 @@ typedef struct {
 
 static fptr2name_t fptr2name[] = {
     {.pfunc = __math_dispatch_error, .cname = "__math_dispatch_error"},
-#include "tmp-mth_alldefs.h"
+// #include "tmp-mth_alldefs.h"
 };
 
 static int

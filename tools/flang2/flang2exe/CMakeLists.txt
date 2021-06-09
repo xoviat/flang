@@ -117,7 +117,7 @@ foreach(FILE ${SHARED_SOURCES})
       COMMAND ${CMAKE_COMMAND} -E copy ${FILE} ${TOFILE}pp
       MAIN_DEPENDENCY ${FILE})
   else()
-    add_custom_command(OUTPUT ${TOFILE}pp
+    add_custom_command(OUTPUT ${TOFILE}pp 
       COMMAND ${CMAKE_COMMAND} -E create_symlink ${FILE} ${TOFILE}pp
       MAIN_DEPENDENCY ${FILE})
   endif()
@@ -138,11 +138,16 @@ target_compile_options(flang2
   ${COMPILE_OPTS}
   )
 
+  
 target_link_libraries(flang2
   PRIVATE
   flangArgParser
   scutil
   )
+  
+if (NOT MSVC)
+  target_link_libraries(flang2  m)
+endif()
 
 add_dependencies(flang2
   gen_backend_error_headers # Error message headers

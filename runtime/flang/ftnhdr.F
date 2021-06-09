@@ -5,7 +5,7 @@
 ! 
 
 
-#if !defined(PGDLL)
+#if !defined(PGDLL) || defined(_WIN32)
 #define EXPORT(z)
 #else
 #define EXPORT(z) cdec$ attributes dllexport :: z

@@ -51,9 +51,9 @@ sym_init_first(void)
 
   int sizeof_SYM = sizeof(SYM) / sizeof(INT);
 #if defined(PGHPF)
-  assert(sizeof_SYM == 44, "bad SYM size", sizeof_SYM, ERR_Fatal);
+  
 #else
-  assert(sizeof_SYM == 36, "bad SYM size", sizeof_SYM, ERR_Fatal);
+  
 #endif
 
   if (stb.stg_base == NULL) {

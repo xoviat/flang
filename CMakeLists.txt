@@ -6,23 +6,61 @@
 
 cmake_minimum_required(VERSION 3.3)
 
+cmake_policy(SET CMP0054 OLD)
+
+SET(CMAKE_Fortran_COMPILER flang)
+
 # In order to bootstrap the runtime library we need to skip
 # CMake's Fortran tests
 SET(CMAKE_Fortran_COMPILER_WORKS 1)
+SET(CMAKE_Fortran_ABI_COMPILED 0)
+SET(CMAKE_Fortran_COMPILER_SUPPORTS_F90 1)
+SET(CMAKE_Fortran_PREPROCESS_SOURCE
+    "<CMAKE_Fortran_COMPILER> -cpp <DEFINES> <INCLUDES> <FLAGS> -E <SOURCE> -o <PREPROCESSED_SOURCE>")
+SET(CMAKE_Fortran_COMPILE_OBJECT
+    "<CMAKE_Fortran_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -c <SOURCE> -o <OBJECT>")
+SET(CMAKE_Fortran_MODDIR_FLAG "-module ")
+SET(CMAKE_INCLUDE_FLAG_Fortran "-I")
 
-if( NOT DEFINED TARGET_ARCHITECTURE )
-  execute_process(COMMAND uname -m OUTPUT_STRIP_TRAILING_WHITESPACE
-                  OUTPUT_VARIABLE TARGET_ARCHITECTURE)
+enable_language(C)
+
+# Find OpenMP for C only first, before fortran is enabled
+find_package(OpenMP REQUIRED)
+
+# Create a fake fortran compiler for now
+set(CMAKE_Fortran_COMPILER "${CMAKE_BINARY_DIR}/bin/flang${CMAKE_EXECUTABLE_SUFFIX}")
+if(NOT EXISTS ${CMAKE_Fortran_COMPILER})
+  file(WRITE "${CMAKE_BINARY_DIR}/flang.c" "int main() { return -1; }")
+  try_compile(SHIM_COMPILED
+      ${CMAKE_BINARY_DIR}
+      "${CMAKE_BINARY_DIR}/flang.c"
+      COPY_FILE ${CMAKE_Fortran_COMPILER}
+  )
 endif()
 
-if( NOT DEFINED TARGET_OS )
-  execute_process(COMMAND uname -s OUTPUT_STRIP_TRAILING_WHITESPACE
-                  OUTPUT_VARIABLE TARGET_OS)
+# Make sure that we have the required tools to proceed
+message(STATUS "Checking for GNU tools" )
+execute_process(COMMAND awk --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
+execute_process(COMMAND sed --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
+execute_process(COMMAND grep --version COMMAND_ERROR_IS_FATAL ANY OUTPUT_QUIET)
+message(STATUS "Checking for GNU tools - done" )
+
+# If we are not building as a part of LLVM, build Flang as an
+# standalone project, using LLVM as an external library:
+if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
+  project(Flang C CXX Fortran ASM)
 endif()
+
+set(CMAKE_Fortran_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE}")
+
+set(TARGET_OS ${CMAKE_HOST_SYSTEM_NAME} CACHE STRING "Target OS")
+set(TARGET_ARCHITECTURE ${CMAKE_HOST_SYSTEM_PROCESSOR} CACHE STRING "Target Architecture")
 
 if( ${TARGET_OS} STREQUAL "Linux" )
   set(OS "LINUX")
   set(OSNAME "Linux")
+  set(_lib )
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   if( ${TARGET_ARCHITECTURE} STREQUAL "x86_64" )
     set(ARCHNAME x86-64)
     set(ARCH X86)
@@ -39,15 +77,28 @@ if( ${TARGET_OS} STREQUAL "Linux" )
     message("Unsupported architecture: ${TARGET_ARCHITECTURE}" )
     return()
   endif()
+elseif(${TARGET_OS} STREQUAL "Windows" )
+  set(OS "WINDOWS")
+  set(OSNAME "Windows")
+  set(_lib "lib")
+  add_compile_definitions(
+    _WIN32 WIN32 HOST_WIN WINNT TARGET_WIN TARGET_WIN_X86
+  )
+  if( ${TARGET_ARCHITECTURE} STREQUAL "AMD64" )
+    add_compile_definitions(WIN64 TARGET_WIN_X8664)
+    set(TARGET_ARCHITECTURE "x86_64")
+    set(ARCHNAME x86-64)
+    set(ARCH X86)
+    set(WRDSZ 64)
+  else()
+    add_compile_definitions(TARGET_WIN_X8632)
+    message("Unsupported architecture: ${TARGET_ARCHITECTURE}" )
+    return()
+  endif()
 else()
   message("Unsupported OS: ${TARGET_OS}" )
   return()
 endif()
-
-# The cmake documentation states that these are set.  They are not so we 
-# set them here
-set(CMAKE_HOST_SYSTEM_NAME ${TARGET_OS})
-set(CMAKE_HOST_SYSTEM_PROCESSOR ${TARGET_ARCHITECTURE})
 
 # If we are not building as a part of LLVM, build Flang as an
 # standalone project, using LLVM as an external library:
@@ -309,9 +360,9 @@ macro(add_flang_library name)
 #  link_system_libs( ${name} )  # getd of cmake warning messages
 
   install(TARGETS ${name}
-    LIBRARY DESTINATION lib${LLVM_LIBDIR_SUFFIX}
-    ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX}
-    RUNTIME DESTINATION bin)
+    LIBRARY DESTINATION ${LLVM_LIBRARY_DIR}
+    ARCHIVE DESTINATION ${LLVM_LIBRARY_DIR}
+    RUNTIME DESTINATION ${LLVM_TOOLS_BINARY_DIR})
   set_target_properties(${name} PROPERTIES FOLDER "Flang libraries")
 endmacro(add_flang_library)
 
@@ -330,15 +381,13 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # Install Fortran module files
 install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/
-  DESTINATION include
-  )
+        DESTINATION ${LLVM_MAIN_INCLUDE_DIR}/flang)
 
 # Install Fortran OpenMP include file
 # Copy omp_lib.h file, not the symlink
 get_filename_component(OMP_LIB_H_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include/omp_lib.h REALPATH)
 install(FILES ${OMP_LIB_H_PATH}
-  DESTINATION include
-  )
+        DESTINATION ${LLVM_MAIN_INCLUDE_DIR}/flang)
 
 add_definitions( -D_GNU_SOURCE )
 
@@ -386,32 +435,9 @@ if (FLANG_OPENMP_GPU_NVIDIA)
   add_definitions("-DOMP_OFFLOAD_LLVM")
 endif()
 
-if( FLANG_INCLUDE_TESTS )
-#  if(EXISTS ${LLVM_MAIN_SRC_DIR}/utils/unittest/googletest/include/gtest/gtest.h)
-#    add_subdirectory(unittests)
-#    list(APPEND FLANG_TEST_DEPS FlangUnitTests)
-#    list(APPEND FLANG_TEST_PARAMS
-#      flang_unit_site_config=${CMAKE_CURRENT_BINARY_DIR}/test/Unit/lit.site.cfg
-#      )
-#  endif()
+if( BUILD_TESTING )
+  enable_testing()
   add_subdirectory(test)
-
-  if(FLANG_BUILT_STANDALONE)
-    # Add a global check rule now that all subdirectories have been traversed
-    # and we know the total set of lit testsuites.
-    get_property(LLVM_LIT_TESTSUITES GLOBAL PROPERTY LLVM_LIT_TESTSUITES)
-    get_property(LLVM_LIT_PARAMS GLOBAL PROPERTY LLVM_LIT_PARAMS)
-    get_property(LLVM_LIT_DEPENDS GLOBAL PROPERTY LLVM_LIT_DEPENDS)
-    get_property(LLVM_LIT_EXTRA_ARGS GLOBAL PROPERTY LLVM_LIT_EXTRA_ARGS)
-    add_lit_target(check-all
-      "Running all regression tests"
-      ${LLVM_LIT_TESTSUITES}
-      PARAMS ${LLVM_LIT_PARAMS}
-      DEPENDS ${LLVM_LIT_DEPENDS}
-      ARGS ${LLVM_LIT_EXTRA_ARGS}
-      )
-  endif()
-#  add_subdirectory(utils/perf-training)
 endif()
 
 option(FLANG_INCLUDE_DOCS "Generate build targets for the Flang docs."
